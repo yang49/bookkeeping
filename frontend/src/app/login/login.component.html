@@ -1,0 +1,49 @@
+
+<div class="card">
+  <div class="card-header">
+    <h2>{{'SIGN_IN' | translate}}</h2>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="loginForm" class="form-horizontal">
+      <div class="form-group">
+        <div class="d-flex pb-1">
+          <mat-form-field>
+            <input matInput type="text" name="email"
+                   placeholder="{{'EMAIL' | translate}}" formControlName="email" required>
+<!--            <mat-error *ngIf="loginForm.get('email').invalid">{{getEmailErrorMessage() | translate}}-->
+<!--            </mat-error>-->
+          </mat-form-field>
+        </div>
+        <div class="d-flex">
+          <mat-form-field>
+            <input matInput type="password" name="password" formControlName="password"
+                   placeholder="{{'PASSWORD' | translate}}" required>
+<!--            <mat-error *ngIf="loginForm.get('password').invalid">{{getPasswordErrorMessage() | translate}}-->
+<!--            </mat-error>-->
+          </mat-form-field>
+        </div>
+        <div class="d-flex">
+          <div class="forget-password-link">
+            <a routerLink="/forgetPassword">{{'FORGET_PASSWORD' | translate}}</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button type="button" [disabled]="loginForm.invalid" class="btn btn-primary"
+                (click)="login()">
+          {{'SIGN_IN' | translate}}
+        </button>
+        <button type="button" class="btn" routerLink="/register" routerLinkActive="active">
+          {{'SIGN_UP' | translate}}
+        </button>
+        <button type="button" class="btn" routerLink="/" routerLinkActive="active">
+          {{'CANCEL' | translate}}
+        </button>
+        <hr>
+        <button id="googleBtn" class="btn btn-secondary">{{'SIGN_IN_WITH_GOOGLE' | translate}}</button>
+      </div>
+    </form>
+    <!--                    <re-captcha (resolved)="resolved($event)" siteKey="6LcBFfEUAAAAANJf4SQJIz-3FY5lPftL36YbMTOq"></re-captcha>-->
+  </div>
+</div>

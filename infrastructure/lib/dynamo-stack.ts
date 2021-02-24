@@ -1,5 +1,5 @@
 import * as cdk from "@aws-cdk/core";
-import {AttributeType, BillingMode, Table} from '@aws-cdk/aws-dynamodb';
+import {AttributeType, BillingMode, ProjectionType, Table} from '@aws-cdk/aws-dynamodb';
 
 interface DynamoStackProps extends cdk.StackProps {
 
@@ -11,9 +11,19 @@ export class DynamoStack extends cdk.Stack {
         const userTable = new Table(this, 'UserTable', {
             tableName: 'UserTable',
             partitionKey: { name: 'userId', type: AttributeType.STRING},
-            sortKey: { name: 'company', type: AttributeType.STRING },
-            billingMode: BillingMode.PAY_PER_REQUEST
+            billingMode: BillingMode.PAY_PER_REQUEST,
         });
+        userTable.addGlobalSecondaryIndex({
+            indexName: 'phone',
+            partitionKey: {name: 'phone', type: AttributeType.STRING},
+            projectionType: ProjectionType.ALL
+        });
+        userTable.addGlobalSecondaryIndex({
+            indexName: 'email',
+            partitionKey: {name: 'email', type: AttributeType.STRING},
+            projectionType: ProjectionType.ALL
+        });
+
         const companyTable = new Table(this, 'CompanyTable', {
             tableName: 'CompanyTable',
             partitionKey: { name: 'companyId', type: AttributeType.STRING },

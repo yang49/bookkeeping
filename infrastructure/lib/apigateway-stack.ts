@@ -18,15 +18,12 @@ export class ApigatewayStack extends cdk.Stack {
 
         const lambdaRole = new Role(this, 'LambdaRole', {
             assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+            managedPolicies: [
+                ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'),
+                ManagedPolicy.fromAwsManagedPolicyName('CloudWatchFullAccess'),
+                ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLambdaInsightsExecutionRolePolicy')
+            ]
         });
-
-        lambdaRole.addManagedPolicy(
-            ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess')
-        );
-
-        lambdaRole.addManagedPolicy(
-            ManagedPolicy.fromAwsManagedPolicyName('CloudWatchApplicationInsightsFullAccess')
-        );
 
         const fn = new lambda.Function(this, 'MyFunction', {
             functionName: "TestFunction",

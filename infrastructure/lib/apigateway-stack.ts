@@ -1,20 +1,21 @@
 import * as cdk from '@aws-cdk/core';
 import * as path from 'path'
 import {AuthorizationType, EndpointType, LambdaIntegration, RestApi, SecurityPolicy} from "@aws-cdk/aws-apigateway";
-import {Certificate, CertificateValidation} from '@aws-cdk/aws-certificatemanager';
-import {ARecord, HostedZone, RecordTarget} from '@aws-cdk/aws-route53';
+import {Certificate} from '@aws-cdk/aws-certificatemanager';
+import {ARecord, IHostedZone, RecordTarget} from '@aws-cdk/aws-route53';
 import {ApiGateway} from "@aws-cdk/aws-route53-targets";
 import {ManagedPolicy, Role, ServicePrincipal} from "@aws-cdk/aws-iam";
-import {Tracing} from "@aws-cdk/aws-lambda";
 import lambda = require('@aws-cdk/aws-lambda');
+import {Construct} from "@aws-cdk/core";
 
 interface ApigatewayStackProps extends cdk.StackProps {
+    readonly certificate: Certificate,
+    readonly hostedZone: IHostedZone
 }
 
 export class ApigatewayStack extends cdk.Stack {
-    constructor(scope: cdk.Construct, id: string, props: ApigatewayStackProps) {
+    constructor(scope: Construct, id: string, props: ApigatewayStackProps) {
         super(scope, id, props);
-        const domainName = 'zynebula.com';
 
         const lambdaRole = new Role(this, 'LambdaRole', {
             assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
@@ -50,22 +51,13 @@ export class ApigatewayStack extends cdk.Stack {
             endpointTypes: [EndpointType.EDGE],
         });
 
-        const hostedZone = HostedZone.fromLookup(this, 'ApigatewayHostedZone', {
-            domainName: domainName
-        });
-
-        const certificate = new Certificate(this, 'apigateway-certificate', {
-            domainName: 'api.zynebula.com',
-            validation: CertificateValidation.fromDns(hostedZone)
-        });
-
         const testApi = api.root.addResource('test')
         const registrationApi = api.root.addResource('register');
 
         api.addDomainName('api-gateway-domain', {
             domainName: 'api.zynebula.com',
             endpointType: EndpointType.EDGE,
-            certificate: certificate,
+            certificate: props.certificate,
             securityPolicy: SecurityPolicy.TLS_1_2
         });
 
@@ -77,9 +69,9 @@ export class ApigatewayStack extends cdk.Stack {
             authorizationType: AuthorizationType.IAM
         });
 
-        const aRecord = new ARecord( this, "domain_alias_record", {
+        new ARecord( this, "domain_alias_record", {
             recordName:  'api.zynebula.com',
-            zone: hostedZone,
+            zone: props.hostedZone,
             target: RecordTarget.fromAlias(new ApiGateway(api))
         });
     }

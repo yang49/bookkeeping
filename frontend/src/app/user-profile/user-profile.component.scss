@@ -1,0 +1,149 @@
+
+
+$status-bar-width: 5px;
+//.material-icons {
+//  border-radius: 10%;
+//  position: absolute;
+//  right: 20px;
+//  top: 120px;
+//}
+
+.material-icons:hover {
+  background-color: grey;
+}
+
+
+i {
+  cursor: pointer;
+}
+
+.card {
+  display: flex;
+  width: 100%;
+  padding: 2% 3% 2% 3%;
+}
+
+.card-user {
+  min-width: 20em;
+}
+
+#background {
+  min-width: 20em;
+  //align-items: center;
+}
+
+#userCard, #wallet, #qrCode {
+  width: 50%;
+  position: relative;
+  margin-top: 5%;
+  margin-bottom: 5%;
+  align-self: center;
+}
+
+.img-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#walletFunction {
+  padding-bottom: 1em;
+}
+#wallet, #qrCode {
+  min-width: 20em;
+  .row {
+    position: relative;
+    width: 100%;
+    margin: 0 0 0 0;
+    .col {
+      text-align: center;
+      .indicator {
+        height: 4px;
+        border-radius: 2px;
+        background-color: orange;
+        width: 50%;
+        position: relative;
+        display: inline-block;
+      }
+      i {
+        position: relative;
+        font-size: 45px;
+      }
+      p {
+        font-size: 0.8em;
+      }
+    }
+  }
+  .col {
+    position: relative;
+    width: 100%;
+    i {
+      padding: 1em 0 0 0;
+    }
+  }
+  h5 {
+    margin-bottom: 0;
+    text-align: center;
+    font-size: 1em;
+  }
+}
+
+.invitationCode {
+  padding-bottom: 2em;
+}
+
+.author {
+  margin-top: 0;
+  .avatar {
+    background-color: white;
+    margin: auto;
+    //.material-icons {
+    //  margin: 0;
+    //  position: relative;
+    //  right: 0;
+    //  font-size: 125px;
+    //}
+  }
+}
+
+.function-item-wrapper {
+  padding-top: 1em;
+  .col {
+    margin-top: 0.3em;
+    position: relative;
+    padding:1em 0 1em 2em;
+    border-radius: 5px;
+    border-top: 1em;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05), 0 3px 6px rgba(0, 0, 0, 0.03);
+    i{
+      position: absolute;
+      right: 1.25em;
+    }
+  }
+
+}
+
+.icon-title {
+  width: 75px;
+  text-align: center;
+}
+
+.user-icon {
+  position: relative;
+  top: 2px;
+  left: 3.3px;
+}
+
+.transactionContainer {
+  width: inherit;
+  text-align: center;
+}
+
+.withdrawContainer {
+  width: inherit;
+}
+
+.pointer{
+  cursor: pointer;
+}

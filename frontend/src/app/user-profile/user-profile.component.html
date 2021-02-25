@@ -1,0 +1,206 @@
+<!--<ng-container *ngIf="profile">-->
+  <div class="panel-header panel-header-sm">
+  </div>
+  <div class="user-profile-content main-content">
+    <div class="card flex" id="background">
+      <h2>
+        {{"USER_PROFILE" | translate}}
+      </h2>
+      <div *ngIf="this.currentCard === 'userProfile'" class="card card-user flex" id="userCard">
+        <div class="card-body">
+          <div class="d-flex row justify-content-center">
+            <div class="author">
+              <div class="avatar border-gray">
+                <img class="user-icon" src="../assets/img/user_icon.png">
+              </div>
+              <h5 class="title">{{userName}}</h5>
+            </div>
+          </div>
+          <div class="d-flex row">
+            <div class="d-flex col justify-content-center">
+              <div class="overview-icon">
+                <i matTooltip="{{'EDIT' | translate}}"
+                   matTooltipShowDelay="1500"
+                   class="material-icons"
+                   (click)="showOverview()">
+                  trending_up
+                </i>
+              </div>
+            </div>
+            <div class="d-flex col justify-content-center">
+              <div class="edit-icon">
+                <i matTooltip="{{'EDIT' | translate}}"
+                   matTooltipShowDelay="1500"
+                   class="material-icons"
+                   (click)="editUserProfile()">
+                  create
+                </i>
+              </div>
+            </div>
+            <div class="d-flex col justify-content-center">
+              <div class="edit-icon">
+                                <span matTooltip="{{'AUTH_APPLY' | translate}}"
+                                      matTooltipShowDelay="1500"
+                                      class="material-icons"
+                                      (click)="authApply()">
+                                    insert_drive_file
+                                </span>
+              </div>
+            </div>
+          </div>
+          <div class="function-item-wrapper">
+            <div class="col pointer" (click)="switchCards('wallet')">
+              <div>{{"WALLET" | translate}}</div>
+              <i class="now-ui-icons arrows-1_minimal-right"></i>
+            </div>
+            <div class="col pointer" (click)="switchCards('qrCode')">
+              <div>{{"INVITATION_CODE" | translate}}</div>
+              <i class="now-ui-icons arrows-1_minimal-right"></i>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div *ngIf="this.currentCard === 'qrCode'" class="card" id="qrCode">
+        <div class="col" (click)="switchCards('userProfile')">
+          <i class="now-ui-icons arrows-1_minimal-left"></i>
+        </div>
+        <h5>{{"INVITATION_QR_CODE" | translate}}</h5>
+        <div class="img-container">
+          <img src="{{qrcode}}">
+        </div>
+        <h5>{{"REFERRAL_EMAIL" | translate}}</h5>
+        <h5 class="invitationCode">{{profile.email}}</h5>
+      </div>
+      <div *ngIf="this.currentCard === 'wallet'" class="card" id="wallet">
+        <div class="col" (click)="switchCards('userProfile')">
+          <i class="now-ui-icons arrows-1_minimal-left"></i>
+        </div>
+        <div class="row">
+          <!--                    <div class="col ">-->
+          <!--                        <div class="icon">-->
+          <!--                            <i class="now-ui-icons shopping_credit-card"></i>-->
+          <!--                        </div>-->
+          <!--                        <h5>{{"MONEY" | translate}}</h5>-->
+          <!--                    </div>-->
+          <div class="col">
+            <div class="icon">
+              <i class="now-ui-icons shopping_credit-card"></i>
+            </div>
+            <h5>{{"WALLET" | translate}}</h5>
+            <p>${{currentCredit}}</p>
+          </div>
+        </div>
+        <div class="col" id="walletFunction">
+          <div class="row">
+            <div class="col pointer">
+              <div (click)="displayTopUpTab()">
+                {{'TOP_UP' | translate}}
+              </div>
+              <div *ngIf="showTopUpTab">
+                <div class="indicator"></div>
+              </div>
+            </div>
+            <div class="col pointer">
+              <div (click)="displayWithdrawTab()">
+                {{'WITHDRAW' | translate}}
+              </div>
+              <div *ngIf="showWithdrawTab">
+                <div class="indicator"></div>
+              </div>
+            </div>
+            <div class="col pointer">
+              <div (click)="displayTransactionHistory()">
+                {{'HISTORY' | translate}}
+              </div>
+              <div *ngIf="showTransactionTab">
+                <div class="indicator"></div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div *ngIf="showTopUpTab">
+              <div class="row">
+                <div class="col">
+                  <mat-form-field>
+                    <input matInput type="number" name="topUpAmount"
+                           placeholder="{{'ENTER_TOP_UP_AMOUNT' | translate}}"
+                           [(ngModel)]="topUpAmount" required>
+                  </mat-form-field>
+                </div>
+                <div class="col">
+                  <button class="btn btn-primary" (click)="topUp()">Confirm</button>
+                </div>
+              </div>
+            </div>
+            <form class="withdrawContainer" [formGroup]="withdrawForm">
+              <div *ngIf="showWithdrawTab">
+                <div class="row">
+                  <div class="col">
+                    <mat-form-field>
+                      <input matInput type="number" name="withdrawAmount"
+                             formControlName="withdrawAmount"
+                             placeholder="{{'ENTER_WITHDRAW_AMOUNT' | translate}}" required>
+
+                      <!--[errorStateMatcher]="matcher1"-->
+<!--                      <mat-error-->
+<!--                        *ngIf="withdrawForm.get('withdrawAmount').hasError('inputsInvalid')">-->
+<!--                        {{'INSUFFICIENT_BALANCE' | translate}}-->
+<!--                      </mat-error>-->
+<!--                      <mat-error *ngIf="!withdrawForm.get('withdrawAmount').hasError('inputsInvalid') &&-->
+<!--                                                withdrawForm.get('withdrawAmount').invalid">-->
+<!--                        {{'WITHDRAW_MINIMUM_NOT_MEET' | translate}}-->
+<!--                      </mat-error>-->
+                    </mat-form-field>
+
+                  </div>
+                  <div class="col">
+                    <button class="btn btn-primary" (click)="withdraw()">Confirm</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+            <div class="transactionContainer" *ngIf="showTransactionTab">
+              <div class="transactionHistory">
+                <div *ngIf="transactionEmpty">
+                  {{transactionHistoryEmptyMsg | translate}}
+                </div>
+                <div *ngIf="!transactionEmpty">
+                  <table class="table">
+                    <thead>
+                    <th>
+                      {{'DATE' | translate}}:
+                    </th>
+                    <!--                                                <th>-->
+                    <!--                                                    {{'USERID' | translate}}:-->
+                    <!--                                                </th>-->
+                    <th>
+                      {{'AMOUNT' | translate}}:
+                    </th>
+                    </thead>
+                    <tbody>
+                    <tr *ngFor="let transactions of transactionHistory" class="hover-effect">
+                      <td>
+                        {{transactions.date}}
+                      </td>
+                      <!--                                                <td>-->
+                      <!--                                                    {{transactions.userId}}-->
+                      <!--                                                </td>-->
+                      <td>
+                        {{transactions.amount.toFixed(2)}}
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<!--</ng-container>-->

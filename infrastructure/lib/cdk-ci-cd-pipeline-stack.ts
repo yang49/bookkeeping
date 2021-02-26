@@ -125,11 +125,12 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
 
         const sourceOutput = new Artifact();
 
+        const targetBranchName = props.isProd ? 'prod' : 'test'
         const repository = Repository.fromRepositoryName(this, 'ProjectRepo', 'bookkeeping');
         const sourceAction = new CodeCommitSourceAction({
             actionName: 'CodeCommit',
             repository,
-            branch: 'prod',
+            branch: targetBranchName,
             output: sourceOutput,
             trigger: CodeCommitTrigger.POLL
         });
@@ -148,7 +149,10 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
 
         const codeBuild = new Project(this, 'CodeBuildProject', {
             role,
-            source: Source.codeCommit({ repository }),
+            source: Source.codeCommit({
+                repository,
+                branchOrRef: targetBranchName
+            }),
             buildSpec: BuildSpec.fromObject({
                 "version": 0.2,
                 "phases": {

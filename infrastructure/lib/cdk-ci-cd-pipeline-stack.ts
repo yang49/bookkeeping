@@ -1,7 +1,7 @@
 import * as cdk from '@aws-cdk/core';
 import {RemovalPolicy} from '@aws-cdk/core';
 import {AddressRecordTarget, ARecord, HostedZone} from "@aws-cdk/aws-route53";
-import {DnsValidatedCertificate} from '@aws-cdk/aws-certificatemanager';
+import {DnsValidatedCertificate, Certificate} from '@aws-cdk/aws-certificatemanager';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
 import {Bucket} from "@aws-cdk/aws-s3";
 import {CloudFrontWebDistribution, SecurityPolicyProtocol, SSLMethod} from "@aws-cdk/aws-cloudfront";
@@ -12,7 +12,8 @@ import {BuildSpec, Project, Source} from "@aws-cdk/aws-codebuild";
 import {Repository} from "@aws-cdk/aws-codecommit";
 
 interface CdkCiCdPipelineStackProps extends cdk.StackProps {
-    readonly domainName: string
+    readonly domainName: string,
+    readonly certificate: Certificate
 }
 
 export class CdkCiCdPipelineStack extends cdk.Stack {
@@ -23,12 +24,6 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
             domainName: props.domainName,
             privateZone: false,
         });
-
-        const frontendCertificate = new DnsValidatedCertificate(this, 'WebAppCertificate', {
-            domainName: props.domainName,
-            hostedZone,
-            region: 'us-east-1'
-        });  // certificate region MUST be us-east-1
 
         const siteBucket = new Bucket(this, 'SiteBucket', {
             bucketName: props.domainName,
@@ -46,7 +41,7 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
 
         const distribution = new CloudFrontWebDistribution(this, 'WebAppDistribution', {
             aliasConfiguration: {
-                acmCertRef: frontendCertificate.certificateArn,
+                acmCertRef: props.certificate.certificateArn,
                 names: [props.domainName],
                 sslMethod: SSLMethod.SNI,
                 securityPolicy: SecurityPolicyProtocol.TLS_V1_1_2016,

@@ -5,37 +5,54 @@ import { InfrastructureStack } from '../lib/infrastructure-stack';
 import {DynamoStack} from "../lib/dynamo-stack";
 import {ApigatewayStack} from "../lib/apigateway-stack";
 import {CdkCiCdPipelineStack} from "../lib/cdk-ci-cd-pipeline-stack";
-import {HostedZone} from "@aws-cdk/aws-route53";
+
 import {CertificateStack} from "../lib/certificate-stack";
+import {Environment} from "@aws-cdk/core/lib/environment";
 
 const domainName = 'zynebula.com';
 
 const app = new cdk.App();
 
 
-const certificateStack = new CertificateStack(app, 'CertificateStack', {
-    env: { account: '567028380312', region: 'us-east-1' },
-    domainName: domainName,
+const stages = ['test', 'prod'];
+
+stages.forEach( (stage) => {
+    if (stage === 'prod') {
+        const prodEnv = { account: '567028380312', region: 'us-east-1' };
+        createStacks(prodEnv, true);
+    } else {
+        const testEnv = { account: '567028380312', region: 'us-west-1' };
+        createStacks(testEnv);
+    }
 })
 
-new InfrastructureStack(app, 'InfrastructureStack', {
-    env: { account: '567028380312', region: 'us-east-1' }
-});
+function createStacks(env: Environment, isProd?: boolean) {
+    const stackNamePrefix = isProd ? '' : 'Test';
+    const certificateStack = new CertificateStack(app, `${stackNamePrefix}CertificateStack`, {
+        env: env,
+        domainName: domainName,
+    })
 
-new DynamoStack(app, 'DatabaseStack', {
-    env: { account: '567028380312', region: 'us-east-1' }
-});
+    new InfrastructureStack(app, `${stackNamePrefix}InfrastructureStack`, {
+        env: env
+    });
 
-const apiGatewayStack = new ApigatewayStack(app, 'ApigatewayStack', {
-    env: { account: '567028380312', region: 'us-east-1' },
-    hostedZone: certificateStack.hostedZone,
-    certificate: certificateStack.certificate
-});
+    new DynamoStack(app, `${stackNamePrefix}DatabaseStack`, {
+        env: env
+    });
 
-const cdkCiCdPipelineStack =  new CdkCiCdPipelineStack(app, 'CdkCiCdPipelineStack', {
-    env: { account: '567028380312', region: 'us-east-1' },
-    domainName: domainName
-})
+    const apiGatewayStack = new ApigatewayStack(app, `${stackNamePrefix}ApigatewayStack`, {
+        env: env,
+        hostedZone: certificateStack.hostedZone,
+        certificate: certificateStack.certificate
+    });
 
-apiGatewayStack.addDependency(certificateStack);
-cdkCiCdPipelineStack.addDependency(certificateStack);
+    const cdkCiCdPipelineStack =  new CdkCiCdPipelineStack(app, `${stackNamePrefix}CdkCiCdPipelineStack`, {
+        env: env,
+        domainName: domainName,
+        certificate: certificateStack.certificate
+    })
+
+    apiGatewayStack.addDependency(certificateStack);
+    cdkCiCdPipelineStack.addDependency(certificateStack);
+}

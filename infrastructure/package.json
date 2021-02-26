@@ -8,7 +8,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy:prod": "cdk deploy CertificateStack DatabaseStack InfrastructureStack ApigatewayStack CdkCiCdPipelineStack",
+    "deploy:test": "cdk deploy TestCertificateStack TestDatabaseStack TestInfrastructureStack TestApigatewayStack TestcleaCdkCiCdPipelineStack"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.90.1",

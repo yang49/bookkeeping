@@ -22,15 +22,16 @@ stages.forEach( (stage) => {
         createStacks(prodEnv, true);
     } else {
         const testEnv = { account: '567028380312', region: 'us-west-1' };
-        createStacks(testEnv);
+        createStacks(testEnv, false);
     }
 })
 
-function createStacks(env: Environment, isProd?: boolean) {
+function createStacks(env: Environment, isProd: boolean) {
     const stackNamePrefix = isProd ? '' : 'Test';
     const certificateStack = new CertificateStack(app, `${stackNamePrefix}CertificateStack`, {
         env: env,
         domainName: domainName,
+        isProd
     })
 
     new InfrastructureStack(app, `${stackNamePrefix}InfrastructureStack`, {
@@ -44,13 +45,15 @@ function createStacks(env: Environment, isProd?: boolean) {
     const apiGatewayStack = new ApigatewayStack(app, `${stackNamePrefix}ApigatewayStack`, {
         env: env,
         hostedZone: certificateStack.hostedZone,
-        certificate: certificateStack.certificate
+        certificate: certificateStack.certificate,
+        isProd: isProd
     });
 
     const cdkCiCdPipelineStack =  new CdkCiCdPipelineStack(app, `${stackNamePrefix}CdkCiCdPipelineStack`, {
         env: env,
         domainName: domainName,
-        certificate: certificateStack.certificate
+        certificate: certificateStack.certificate,
+        isProd: isProd
     })
 
     apiGatewayStack.addDependency(certificateStack);

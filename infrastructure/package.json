@@ -10,7 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "deploy:prod": "cdk deploy CertificateStack DatabaseStack InfrastructureStack ApigatewayStack CdkCiCdPipelineStack",
-    "deploy:test": "cdk deploy TestCertificateStack TestDatabaseStack TestInfrastructureStack TestApigatewayStack TestcleaCdkCiCdPipelineStack"
+    "deploy:test": "cdk deploy TestCertificateStack TestDatabaseStack TestInfrastructureStack TestApigatewayStack TestCdkCiCdPipelineStack"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.90.1",

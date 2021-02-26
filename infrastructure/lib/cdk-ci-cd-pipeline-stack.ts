@@ -13,20 +13,36 @@ import {Repository} from "@aws-cdk/aws-codecommit";
 
 interface CdkCiCdPipelineStackProps extends cdk.StackProps {
     readonly domainName: string,
-    readonly certificate: Certificate
+    readonly certificate: Certificate,
+    readonly isProd?: boolean
 }
 
 export class CdkCiCdPipelineStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props: CdkCiCdPipelineStackProps) {
         super(scope, id, props);
 
+        let domainName = props.domainName;
+        if (!props.isProd) {
+            domainName = 'test' + '.' + props.domainName;
+        }
+
         const hostedZone = HostedZone.fromLookup(this, props.domainName, {
             domainName: props.domainName,
             privateZone: false,
         });
 
+        let frontendCertificate = null;
+
+        if (!props.isProd) {
+            frontendCertificate = new DnsValidatedCertificate(this, 'TestWebAppCertificate', {
+                domainName: props.domainName,
+                hostedZone,
+                region: 'us-east-1',
+            });  // certificate region MUST be us-east-1
+        }
+
         const siteBucket = new Bucket(this, 'SiteBucket', {
-            bucketName: props.domainName,
+            bucketName: domainName,
             websiteIndexDocument: 'index.html',
             websiteErrorDocument: 'error.html',
             publicReadAccess: true,
@@ -39,12 +55,19 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
             }
         });
 
-        const distribution = new CloudFrontWebDistribution(this, 'WebAppDistribution', {
+        let certificateArn = props.isProd ? props.certificate.certificateArn : frontendCertificate?.certificateArn;
+        certificateArn = certificateArn ? certificateArn : '';
+        let names = [props.domainName, 'www.' + props.domainName];
+        if (props.isProd) {
+            names = ['test.' + props.domainName]
+        }
+        const cloudFrontId = props.isProd ? 'WebAppDistribution' : 'TestWebAppDistribution';
+        const distribution = new CloudFrontWebDistribution(this, cloudFrontId, {
             aliasConfiguration: {
-                acmCertRef: props.certificate.certificateArn,
-                names: [props.domainName],
+                acmCertRef: certificateArn,
+                names: names,
                 sslMethod: SSLMethod.SNI,
-                securityPolicy: SecurityPolicyProtocol.TLS_V1_1_2016,
+                securityPolicy: SecurityPolicyProtocol.TLS_V1_2_2019,
             },
             originConfigs: [{
                 s3OriginSource: {
@@ -70,6 +93,22 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
             zone: hostedZone,
             target: AddressRecordTarget.fromAlias(new CloudFrontTarget(distribution)),
         });
+
+        if (props.isProd) {
+            new ARecord(this, 'ARecordForWWWPrefix', {
+                recordName: 'www.' + props.domainName,
+                zone: hostedZone,
+                target: AddressRecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+            });
+        }
+
+        if(!props.isProd) {
+            new ARecord(this, 'TestARecordForTestPrefix', {
+                recordName: 'test.' + props.domainName,
+                zone: hostedZone,
+                target: AddressRecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+            });
+        }
 
         const pipeline = new Pipeline(this, 'FrontendPipeline', {
             pipelineName: 'deploy-angular-application',
@@ -100,7 +139,8 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
 
         sourceStage.addAction(sourceAction);
 
-        const role = new Role(this, 'CodeBuildRole', {
+        const codeBuildRoleName = props.isProd ? 'CodeBuildRole' : 'TestCodeBuildRole';
+        const role = new Role(this, codeBuildRoleName, {
             assumedBy: new ServicePrincipal('codebuild.amazonaws.com'),
             managedPolicies: [
                 ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
@@ -152,7 +192,7 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
                             "echo BUILD COMPLETE running sync with s3",
                             "aws s3 rm s3://zynebula.com/ --recursive",
                             "aws s3 cp ./dist/frontend s3://zynebula.com/ --recursive --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers",
-                            "aws cloudfront create-invalidation --distribution-id E3VFVWWPF20DBW --paths \"/*\""
+                            // "aws cloudfront create-invalidation --distribution-id E3VFVWWPF20DBW --paths \"/*\""
                         ]
                     }
                 }

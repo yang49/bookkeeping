@@ -10,14 +10,16 @@ import {Construct} from "@aws-cdk/core";
 
 interface ApigatewayStackProps extends cdk.StackProps {
     readonly certificate: Certificate,
-    readonly hostedZone: IHostedZone
+    readonly hostedZone: IHostedZone,
+    readonly isProd: boolean
 }
 
 export class ApigatewayStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props: ApigatewayStackProps) {
         super(scope, id, props);
 
-        const lambdaRole = new Role(this, 'LambdaRole', {
+        const lambdaRoleId = props.isProd ? 'LambdaRole' : 'TestLambdaRole';
+        const lambdaRole = new Role(this, lambdaRoleId, {
             assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
             managedPolicies: [
                 ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'),
@@ -54,8 +56,9 @@ export class ApigatewayStack extends cdk.Stack {
         const testApi = api.root.addResource('test')
         const registrationApi = api.root.addResource('register');
 
-        api.addDomainName('api-gateway-domain', {
-            domainName: 'api.zynebula.com',
+        const apiDomainNameId = props.isProd ? 'api-gateway-domain' : 'test-api-gateway-domain';
+        api.addDomainName(apiDomainNameId, {
+            domainName: props.isProd ? 'api.zynebula.com' : 'apitest.zynebula.com',
             endpointType: EndpointType.EDGE,
             certificate: props.certificate,
             securityPolicy: SecurityPolicy.TLS_1_2
@@ -69,8 +72,9 @@ export class ApigatewayStack extends cdk.Stack {
             authorizationType: AuthorizationType.IAM
         });
 
-        new ARecord( this, "domain_alias_record", {
-            recordName:  'api.zynebula.com',
+        const recordId = props.isProd ? 'domain_alias_record' : 'test-domain_alias_record';
+        new ARecord( this, recordId, {
+            recordName: props.isProd ? 'api.zynebula.com' : 'apitest.zynebula.com',
             zone: props.hostedZone,
             target: RecordTarget.fromAlias(new ApiGateway(api))
         });

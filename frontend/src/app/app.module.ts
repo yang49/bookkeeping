@@ -5,10 +5,10 @@ import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {LoginComponent} from './login/login.component';
 import {LandingPageComponent} from './landing-page/landing-page.component';
-import {HTTP_INTERCEPTORS,HttpClient, HttpClientModule} from '@angular/common/http';
-import {TranslateLoader, TranslateModule, TranslateService} from '@ngx-translate/core';
+import {HttpClient, HttpClientModule} from '@angular/common/http';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
-import {ReactiveFormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 // import {
 //   MatAutocompleteModule,
 //   MatBottomSheetModule,
@@ -27,13 +27,17 @@ import {ReactiveFormsModule} from '@angular/forms';
 //   MatSnackBarModule,
 //   MatTabsModule
 // } from '@angular/material';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {UserProfileComponent} from './user-profile/user-profile.component';
+import {MatTooltipModule} from '@angular/material/tooltip';
+
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
-    LandingPageComponent
+    LandingPageComponent,
+    UserProfileComponent
   ],
   imports: [
     BrowserModule,
@@ -50,7 +54,8 @@ import {MatFormFieldModule} from '@angular/material/form-field';
     ReactiveFormsModule,
     NoopAnimationsModule,
     MatFormFieldModule,
-    MatFormFieldModule,
+    MatTooltipModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

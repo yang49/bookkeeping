@@ -4,6 +4,7 @@ import {CommonModule} from '@angular/common';
 import {BrowserModule} from '@angular/platform-browser';
 import {LoginComponent} from './login/login.component';
 import {LandingPageComponent} from './landing-page/landing-page.component';
+import {UserProfileComponent} from './user-profile/user-profile.component';
 
 const routes: Routes = [
   {
@@ -18,6 +19,10 @@ const routes: Routes = [
   {
     path: 'landing',
     component: LandingPageComponent
+  },
+  {
+    path: 'userProfile',
+    component: UserProfileComponent
   },
   // {
   //   path: 'verification/:token',

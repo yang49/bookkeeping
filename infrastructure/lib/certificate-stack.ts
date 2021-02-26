@@ -1,5 +1,5 @@
 import * as cdk from '@aws-cdk/core';
-import {Certificate, CertificateValidation, DnsValidatedCertificate} from '@aws-cdk/aws-certificatemanager';
+import {Certificate, CertificateValidation, DnsValidatedCertificate, ICertificate} from '@aws-cdk/aws-certificatemanager';
 import {HostedZone, IHostedZone} from "@aws-cdk/aws-route53";
 import {Construct} from "@aws-cdk/core";
 
@@ -9,7 +9,7 @@ interface CertificateStackProps extends cdk.StackProps {
 }
 
 export class CertificateStack extends cdk.Stack {
-    public certificate: Certificate
+    public certificate: ICertificate
     public hostedZone: IHostedZone
 
     constructor(scope: Construct, id: string, props: CertificateStackProps) {
@@ -34,6 +34,8 @@ export class CertificateStack extends cdk.Stack {
                 subjectAlternativeNames: [props.domainName],
                 validation: CertificateValidation.fromDns(this.hostedZone)
             });
+            this.certificate = Certificate.fromCertificateArn(this, 'TestCertificate',
+                'arn:aws:acm:us-east-1:567028380312:certificate/0627a19b-7049-4d8a-8e8b-2c307eadb0d7')
         }
     }
 }

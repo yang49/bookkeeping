@@ -1,7 +1,7 @@
 import * as cdk from '@aws-cdk/core';
-import {RemovalPolicy} from '@aws-cdk/core';
+import {Construct, Environment, RemovalPolicy} from '@aws-cdk/core';
 import {AddressRecordTarget, ARecord, HostedZone} from "@aws-cdk/aws-route53";
-import {DnsValidatedCertificate, Certificate} from '@aws-cdk/aws-certificatemanager';
+import {DnsValidatedCertificate, Certificate, ICertificate} from '@aws-cdk/aws-certificatemanager';
 import {Artifact, Pipeline} from '@aws-cdk/aws-codepipeline';
 import {Bucket} from "@aws-cdk/aws-s3";
 import {CloudFrontWebDistribution, SecurityPolicyProtocol, SSLMethod} from "@aws-cdk/aws-cloudfront";
@@ -13,7 +13,7 @@ import {Repository} from "@aws-cdk/aws-codecommit";
 
 interface CdkCiCdPipelineStackProps extends cdk.StackProps {
     readonly domainName: string,
-    readonly certificate: Certificate,
+    readonly certificate: Certificate | ICertificate,
     readonly isProd?: boolean
 }
 
@@ -31,18 +31,10 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
             privateZone: false,
         });
 
-        let frontendCertificate = null;
-
-        if (!props.isProd) {
-            frontendCertificate = new DnsValidatedCertificate(this, 'TestWebAppCertificate', {
-                domainName: props.domainName,
-                hostedZone,
-                region: 'us-east-1',
-            });  // certificate region MUST be us-east-1
-        }
-
-        const siteBucket = new Bucket(this, 'SiteBucket', {
-            bucketName: domainName,
+        const bucketName = domainName;
+        const siteBucketId = props.isProd ? 'SiteBucket' : 'TestSiteBucket';
+        let siteBucket =  new Bucket(this, siteBucketId, {
+            bucketName: bucketName,
             websiteIndexDocument: 'index.html',
             websiteErrorDocument: 'error.html',
             publicReadAccess: true,
@@ -55,10 +47,11 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
             }
         });
 
-        let certificateArn = props.isProd ? props.certificate.certificateArn : frontendCertificate?.certificateArn;
-        certificateArn = certificateArn ? certificateArn : '';
+        // let certificateArn = props.isProd ? props.certificate.certificateArn : frontendCertificate?.certificateArn;
+        // certificateArn = certificateArn ? certificateArn : '';
+        const certificateArn = props.certificate.certificateArn;
         let names = [props.domainName, 'www.' + props.domainName];
-        if (props.isProd) {
+        if (!props.isProd) {
             names = ['test.' + props.domainName]
         }
         const cloudFrontId = props.isProd ? 'WebAppDistribution' : 'TestWebAppDistribution';
@@ -88,15 +81,19 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
             }]
         });
 
-        new ARecord(this, 'ARecord', {
-            recordName: props.domainName,
-            zone: hostedZone,
-            target: AddressRecordTarget.fromAlias(new CloudFrontTarget(distribution)),
-        });
-
         if (props.isProd) {
+            new ARecord(this, 'ARecord', {
+                recordName: props.domainName,
+                zone: hostedZone,
+                target: AddressRecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+            });
             new ARecord(this, 'ARecordForWWWPrefix', {
                 recordName: 'www.' + props.domainName,
+                zone: hostedZone,
+                target: AddressRecordTarget.fromAlias(new CloudFrontTarget(distribution)),
+            });
+            new ARecord(this, 'ARecordForAppPrefix', {
+                recordName: 'app.' + props.domainName,
                 zone: hostedZone,
                 target: AddressRecordTarget.fromAlias(new CloudFrontTarget(distribution)),
             });
@@ -190,8 +187,8 @@ export class CdkCiCdPipelineStack extends cdk.Stack {
                     "post_build": {
                         "commands": [
                             "echo BUILD COMPLETE running sync with s3",
-                            "aws s3 rm s3://zynebula.com/ --recursive",
-                            "aws s3 cp ./dist/frontend s3://zynebula.com/ --recursive --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers",
+                            `aws s3 rm s3://${bucketName}/ --recursive`,
+                            `aws s3 cp ./dist/frontend s3://${bucketName}/ --recursive --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers`,
                             // "aws cloudfront create-invalidation --distribution-id E3VFVWWPF20DBW --paths \"/*\""
                         ]
                     }

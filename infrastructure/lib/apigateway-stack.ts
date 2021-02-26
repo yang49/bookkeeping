@@ -1,15 +1,15 @@
 import * as cdk from '@aws-cdk/core';
 import * as path from 'path'
 import {AuthorizationType, EndpointType, LambdaIntegration, RestApi, SecurityPolicy} from "@aws-cdk/aws-apigateway";
-import {Certificate} from '@aws-cdk/aws-certificatemanager';
+import {Certificate, ICertificate} from '@aws-cdk/aws-certificatemanager';
 import {ARecord, IHostedZone, RecordTarget} from '@aws-cdk/aws-route53';
 import {ApiGateway} from "@aws-cdk/aws-route53-targets";
 import {ManagedPolicy, Role, ServicePrincipal} from "@aws-cdk/aws-iam";
 import lambda = require('@aws-cdk/aws-lambda');
-import {Construct} from "@aws-cdk/core";
+import {Construct, Environment} from "@aws-cdk/core";
 
 interface ApigatewayStackProps extends cdk.StackProps {
-    readonly certificate: Certificate,
+    readonly certificate: ICertificate,
     readonly hostedZone: IHostedZone,
     readonly isProd: boolean
 }
